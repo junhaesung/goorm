@@ -1,0 +1,142 @@
+#!/usr/bin/env node
+
+/**
+ * Module dependencies.
+ */
+
+const Chat = require('./../models/chats');
+
+var app = require('../app');
+var debug = require('debug')('goorm:server');
+var http = require('http');
+
+/**
+ * Get port from environment and store in Express.
+ */
+
+var port = normalizePort(process.env.PORT || '3000');
+app.set('port', port);
+
+/**
+ * Create HTTP server.
+ * Listen on provided port, on all network interfaces.
+ */
+
+const server = http.createServer(app)
+  .listen(port)
+  .on('error', onError)
+  .on('listening', onListening);
+
+
+/**
+ * upgrade http server to socket.io server
+ */
+const io = require('socket.io').listen(server);
+
+// boardcast 채팅방 만들기
+Chat.findOne({
+  name: 'broadcast'
+}, (err, chat) => {
+  if (!chat) {
+    Chat.create({
+      name: 'broadcast',
+      users: [],
+      messages: [],
+    }, (err, chat) => {});
+  }
+});
+
+io.sockets.on('connection', (socket) => {
+  // socket.emit('toclient', { msg:'Welcome !' });
+  
+  socket.on('fromclient', async (data) => {
+    try {
+      // POST /chats (chatroom, message);
+      await updateMessage('broadcast', data.msg);
+      // socket.broadcast.emit('toclient', data); // 자신을 제외하고 다른 클라이언트에게 보냄
+      socket.emit('broadcast', data); // 해당 클라이언트에게만 보냄
+
+    } catch(err) {
+      console.log('socket Error');
+      console.log(err);
+    }     
+    console.log('Message from client :' + data.msg);
+  });
+});
+
+function updateMessage(roomName, message) {
+  return new Promise((resolve, reject) => {
+    Chat.findOne({
+      name: roomName,
+    }, (err, chat) => {
+      console.log(chat);
+      if (err) return reject(new Error('chat not found'));
+      chat.messages.push(message);
+      chat.save(err => {
+        if (err) return reject(err);
+        return resolve();
+      });
+    });
+  });
+}
+
+
+/**
+ * Normalize a port into a number, string, or false.
+ */
+
+function normalizePort(val) {
+  var port = parseInt(val, 10);
+
+  if (isNaN(port)) {
+    // named pipe
+    return val;
+  }
+
+  if (port >= 0) {
+    // port number
+    return port;
+  }
+
+  return false;
+}
+
+/**
+ * Event listener for HTTP server "error" event.
+ */
+
+function onError(error) {
+  if (error.syscall !== 'listen') {
+    throw error;
+  }
+
+  var bind = typeof port === 'string'
+    ? 'Pipe ' + port
+    : 'Port ' + port;
+
+  // handle specific listen errors with friendly messages
+  switch (error.code) {
+    case 'EACCES':
+      console.error(bind + ' requires elevated privileges');
+      process.exit(1);
+      break;
+    case 'EADDRINUSE':
+      console.error(bind + ' is already in use');
+      process.exit(1);
+      break;
+    default:
+      throw error;
+  }
+}
+
+/**
+ * Event listener for HTTP server "listening" event.
+ */
+
+function onListening() {
+  var addr = server.address();
+  var bind = typeof addr === 'string'
+    ? 'pipe ' + addr
+    : 'port ' + addr.port;
+  debug('Listening on ' + bind);
+}

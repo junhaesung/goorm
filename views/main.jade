@@ -1,0 +1,100 @@
+doctype html
+html
+  head
+    title Main
+    meta(charset='utf-8')
+    //- codemirror
+    link(rel='stylesheet', href='/codemirror-5.31.0/lib/codemirror.css')
+    script(src='/codemirror-5.31.0/lib/codemirror.js')
+    script(src='/codemirror-5.31.0/mode/xml/xml.js')
+    script(src='/codemirror-5.31.0/mode/javascript/javascript.js')
+    script(src='/codemirror-5.31.0/mode/css/css.js')
+    script(src='/codemirror-5.31.0/mode/htmlmixed/htmlmixed.js')
+    script(src='/codemirror-5.31.0/addon/edit/matchbrackets.js')
+    script(src='/codemirror-5.31.0/doc/activebookmark.js')
+    //- socket
+    script(src='https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js')
+    //- //- jquery
+    //- script(src='/javascripts/jquery-3.2.1.min.js')
+    //- //- bootstrap
+    //- link(rel='stylesheet', href='/bootstrap-4.0.0-beta/css/bootstrap.min.css')
+    //- script(src='/bootstrap-4.0.0-beta/js/bootstrap.min.js')
+    link(rel='stylesheet', href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css')
+    script(src='https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js')
+    script(src='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js')
+
+    //- custom
+    link(rel='stylesheet', href='/stylesheets/main.css')
+    style.
+      .CodeMirror { height: auto; border: 1px solid #ddd; }
+      .CodeMirror-scroll { max-height: 200px; min-height: 200px; }
+      .CodeMirror pre { padding-left: 7px; line-height: 1.25; }
+  body
+    nav.navbar.navbar-default
+      div.container-fluid
+        div.navbar-header
+          a.navbar-brand(href='#') Goorm Example
+        ul.nav.navbar-nav
+          li#chatNav
+            a(href='#') Chatting
+          li#editNav.active
+            a(href='#') Editor
+          li
+            form(action='/users/logout', method='post')
+              input(type='submit', value='logout')
+    //- chatting
+    article#chat.container
+      h1 Chatting Tab
+      section
+        h2 Chatrooms
+        button#refreshChatroomButton 채팅방 갱신
+        form#createRoomForm
+          input(type='text', placeholder='email address')
+          input#createRoomButton(type='button', value='방만들기')
+        ul#chatroomList
+          li
+            a(href='') chatroom
+      section
+        h2#roomName Room name
+        div#msgs
+        input#msgbox(type='text')
+
+      
+    //- editing
+    article#edit.container
+      h1 Editing Tab
+      section
+        h2 Upload file (.tar.gz, .zip only)
+        form#uploadForm(enctype='multipart/form-data')
+          input(type='file', name='file')
+          input#uploadButton(type='submit' value='Upload')
+      section
+        h2 Files
+        button#refreshFileButton 목록 갱신
+        ul#fileList
+          each file in files
+            li
+              a.files(href='')= file
+        ul
+      section#demo
+        h2#currentFile= currentFile
+        button#saveButton 저장
+        button#excuteButton 실행
+        textarea#demotext= content
+        script.
+          const editor = CodeMirror.fromTextArea(document.getElementById("demotext"), {
+            lineNumbers: true,
+            mode: "text/html",
+            matchBrackets: true,
+          });
+      section
+        div#terminal
+      section
+        h2 Test cases
+        button#testButton 테스트 실행
+        ul
+          li case #1
+            input#testInput(type='text', placeholder='Input')
+            input#testOutput(type='text', placeholder='Output')
+    script(src='/javascripts/main.js')
+

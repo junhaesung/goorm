@@ -1,0 +1,25 @@
+.nav {
+    background: #0B4271;
+}
+
+.chat {
+    background: aliceblue;
+}
+
+.edit {
+    background: lightgray;
+}
+
+#msgs {
+    width: 100%;
+    height: 20em;
+    overflow: scroll;
+}
+
+#terminal {
+    background: black;
+    width: 100%;
+    height: 10em;
+    overflow: scroll;
+    color: white;
+}
